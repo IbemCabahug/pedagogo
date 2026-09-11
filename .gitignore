@@ -22,4 +22,9 @@ app/build
 /docs/
 docs/
 
+# Web workspace repository clone (separate repo)
+/pedagogo-web/
+pedagogo-web/
+
+
 
