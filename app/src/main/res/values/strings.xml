@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Pedagogo</string>
+    <string name="app_subtitle">A Peaceful Companion for Future Educators</string>
+    <string name="channel_class_alarms_name">Class Alarms &amp; Buffers</string>
+    <string name="channel_class_alarms_desc">Gentle notifications and exact alarms tuned to help you arrive centered</string>
+    <string name="nav_dashboard">Today</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_scan">Scan Schedule</string>
+    <string name="btn_add_subject">Add Course</string>
+    <string name="title_next_class">Next In Your Journey</string>
+    <string name="no_classes_today">All clear for today, Teacher! Take time to rest your voice, nourish your mind, and recharge.</string>
+    
+    <!-- Educ Categories -->
+    <string name="category_lecture">Lecture</string>
+    <string name="category_field_study">Field Study / Observation</string>
+    <string name="category_demo">Demo Teaching</string>
+    <string name="category_prep">Lesson &amp; IMs Prep</string>
+    
+    <!-- Mindful microcopy -->
+    <string name="spark_of_the_day">Teacher\'s Spark</string>
+    <string name="center_yourself">Center Yourself</string>
+    <string name="breathe_in">Inhale calm, exhale doubt…</string>
+    <string name="checklist_lesson_plan">Lesson Plan</string>
+    <string name="checklist_materials">Visual Aids / IMs</string>
+    <string name="checklist_tools">Markers &amp; Chalk</string>
+</resources>
