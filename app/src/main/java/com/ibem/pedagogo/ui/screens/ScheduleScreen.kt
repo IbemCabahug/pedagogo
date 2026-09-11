@@ -76,7 +76,7 @@ fun ScheduleScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(28.dp),
-                        horizontalAlignment = Alignment.CenterVertically
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
