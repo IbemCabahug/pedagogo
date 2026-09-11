@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,8 +33,10 @@ fun QrSyncScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     var sessionCodeInput by remember { mutableStateOf("") }
     var syncSuccess by remember { mutableStateOf(false) }
+    var copiedToClipboard by remember { mutableStateOf(false) }
 
     fun buildJsonPayload(): String {
       val root = JSONObject()
@@ -195,6 +199,22 @@ fun QrSyncScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Export / Share Backup JSON", fontWeight = FontWeight.Bold)
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            val json = buildJsonPayload()
+                            clipboardManager.setText(AnnotatedString(json))
+                            copiedToClipboard = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Icon(imageVector = Icons.Outlined.ContentCopy, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (copiedToClipboard) "Copied JSON to Clipboard! ✓" else "Copy JSON to Clipboard", fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
 
@@ -213,7 +233,7 @@ fun QrSyncScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Live Web Pairing Code",
+                            text = "Live Web Pairing Code (Peer Preview)",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -221,7 +241,7 @@ fun QrSyncScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Look at the 'Pairing Code' displayed on your laptop screen at Pedagogo Desk (e.g. pedagogo-xxxxxxx):",
+                        text = "Experimental peer discovery mode. For guaranteed instant transfer to your laptop without network restrictions, use Method 1 above to share or copy your schedule directly.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
