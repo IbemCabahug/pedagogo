@@ -27,6 +27,7 @@ import com.ibem.pedagogo.data.entity.SubjectWithSlots
 import com.ibem.pedagogo.ui.navigation.Screen
 import com.ibem.pedagogo.ui.screens.AddSubjectScreen
 import com.ibem.pedagogo.ui.screens.DashboardScreen
+import com.ibem.pedagogo.ui.screens.QrSyncScreen
 import com.ibem.pedagogo.ui.screens.ScheduleScreen
 import com.ibem.pedagogo.ui.theme.PedagogoTheme
 import kotlinx.coroutines.flow.collectLatest
@@ -126,13 +127,20 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.Dashboard.route) {
                             DashboardScreen(
                                 slots = todaySlots,
-                                onAddClick = { navController.navigate(Screen.AddSubject.route) }
+                                onAddClick = { navController.navigate(Screen.AddSubject.route) },
+                                onSyncClick = { navController.navigate(Screen.QrSync.route) }
                             )
                         }
                         composable(Screen.Schedule.route) {
                             ScheduleScreen(
                                 subjects = allSubjects,
                                 onAddSubjectClick = { navController.navigate(Screen.AddSubject.route) }
+                            )
+                        }
+                        composable(Screen.QrSync.route) {
+                            QrSyncScreen(
+                                subjects = allSubjects,
+                                onBack = { navController.popBackStack() }
                             )
                         }
                         composable(Screen.AddSubject.route) {

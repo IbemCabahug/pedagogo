@@ -35,7 +35,8 @@ import java.util.Calendar
 @Composable
 fun DashboardScreen(
     slots: List<ClassSlotDetail>,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onSyncClick: () -> Unit = {}
 ) {
     val currentDay = remember {
         when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
@@ -76,6 +77,15 @@ fun DashboardScreen(
                             text = "A calm space for your teaching journey",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onSyncClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.Devices,
+                            contentDescription = "Sync with Web Desk",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
