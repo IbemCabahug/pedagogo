@@ -26,5 +26,5 @@ docs/
 /pedagogo-web/
 pedagogo-web/
 
-
-
+# Scratch verification scripts (local-only, never commit)
+scratch/
