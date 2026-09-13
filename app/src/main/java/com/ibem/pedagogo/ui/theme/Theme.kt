@@ -6,11 +6,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+// Full M3 role mapping from the web Desk's design tokens (design-research.md section 3).
+// Dynamic color stays OFF by default: the handcrafted pedagogical palette is the
+// brand (user-confirmed "brand continuity" direction, 2026-09-13).
 private val DarkColorScheme = darkColorScheme(
     primary = SagePrimaryDark,
     onPrimary = SageOnPrimaryDark,
     primaryContainer = SageContainerDark,
     onPrimaryContainer = SageOnContainerDark,
+    inversePrimary = InversePrimaryDark,
     secondary = TerracottaDark,
     onSecondary = TerracottaOnDark,
     secondaryContainer = TerracottaContainerDark,
@@ -25,7 +29,23 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = OnChalkboardText,
     surfaceVariant = ChalkboardDarkCard,
     onSurfaceVariant = OnChalkboardSubtle,
-    outline = ChalkboardDarkOutline
+    surfaceTint = SurfaceTintDark,
+    inverseSurface = InverseSurfaceDark,
+    inverseOnSurface = InverseOnSurfaceDark,
+    error = CalmClayErrorDark,
+    onError = CalmClayOnErrorDark,
+    errorContainer = CalmClayErrorContainerDark,
+    onErrorContainer = CalmClayOnErrorContainerDark,
+    outline = ChalkboardDarkOutline,
+    outlineVariant = OutlineVariantDark,
+    scrim = ScrimColor,
+    surfaceBright = SurfaceBrightDark,
+    surfaceDim = SurfaceDimDark,
+    surfaceContainerLowest = SurfaceContainerLowestDark,
+    surfaceContainerLow = SurfaceContainerLowDark,
+    surfaceContainer = SurfaceContainerDark,
+    surfaceContainerHigh = SurfaceContainerHighDark,
+    surfaceContainerHighest = SurfaceContainerHighestDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -33,6 +53,7 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = SageOnPrimary,
     primaryContainer = SageContainer,
     onPrimaryContainer = SageOnContainer,
+    inversePrimary = InversePrimaryLight,
     secondary = TerracottaSecondary,
     onSecondary = TerracottaOnSecondary,
     secondaryContainer = TerracottaContainer,
@@ -47,7 +68,23 @@ private val LightColorScheme = lightColorScheme(
     onSurface = OnParchmentText,
     surfaceVariant = ParchmentCard,
     onSurfaceVariant = OnParchmentSubtle,
-    outline = ParchmentOutline
+    surfaceTint = SurfaceTintLight,
+    inverseSurface = InverseSurfaceLight,
+    inverseOnSurface = InverseOnSurfaceLight,
+    error = CalmClayError,
+    onError = CalmClayOnError,
+    errorContainer = CalmClayErrorContainer,
+    onErrorContainer = CalmClayOnErrorContainer,
+    outline = ParchmentOutline,
+    outlineVariant = OutlineVariantLight,
+    scrim = ScrimColor,
+    surfaceBright = SurfaceBrightLight,
+    surfaceDim = SurfaceDimLight,
+    surfaceContainerLowest = SurfaceContainerLowestLight,
+    surfaceContainerLow = SurfaceContainerLowLight,
+    surfaceContainer = SurfaceContainerLight,
+    surfaceContainerHigh = SurfaceContainerHighLight,
+    surfaceContainerHighest = SurfaceContainerHighestLight
 )
 
 @Composable
@@ -70,7 +107,7 @@ fun PedagogoTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = PedagogoShapes,
         content = content
     )
 }
-
