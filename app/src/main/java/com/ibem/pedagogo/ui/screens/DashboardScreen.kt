@@ -36,7 +36,8 @@ import java.util.Calendar
 fun DashboardScreen(
     slots: List<ClassSlotDetail>,
     onAddClick: () -> Unit,
-    onSyncClick: () -> Unit = {}
+    onSyncClick: () -> Unit = {},
+    onScanClick: () -> Unit = {}
 ) {
     val currentDay = remember {
         when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
@@ -81,6 +82,13 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onScanClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.DocumentScanner,
+                            contentDescription = "Scan COR",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = onSyncClick) {
                         Icon(
                             imageVector = Icons.Outlined.Devices,

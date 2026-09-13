@@ -26,6 +26,7 @@ import com.ibem.pedagogo.data.entity.Subject
 import com.ibem.pedagogo.data.entity.SubjectWithSlots
 import com.ibem.pedagogo.ui.navigation.Screen
 import com.ibem.pedagogo.ui.screens.AddSubjectScreen
+import com.ibem.pedagogo.ui.screens.CorScanScreen
 import com.ibem.pedagogo.ui.screens.DashboardScreen
 import com.ibem.pedagogo.ui.screens.QrSyncScreen
 import com.ibem.pedagogo.ui.screens.ScheduleScreen
@@ -128,7 +129,8 @@ class MainActivity : ComponentActivity() {
                             DashboardScreen(
                                 slots = todaySlots,
                                 onAddClick = { navController.navigate(Screen.AddSubject.route) },
-                                onSyncClick = { navController.navigate(Screen.QrSync.route) }
+                                onSyncClick = { navController.navigate(Screen.QrSync.route) },
+                                onScanClick = { navController.navigate(Screen.CorScan.route) }
                             )
                         }
                         composable(Screen.Schedule.route) {
@@ -161,6 +163,12 @@ class MainActivity : ComponentActivity() {
                                         navController.popBackStack()
                                     }
                                 }
+                            )
+                        }
+                        composable(Screen.CorScan.route) {
+                            CorScanScreen(
+                                onBack = { navController.popBackStack() },
+                                onDone = { navController.popBackStack(Screen.Dashboard.route, inclusive = false) }
                             )
                         }
                     }
