@@ -2,7 +2,9 @@ package com.ibem.pedagogo.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.net.Uri
+import androidx.core.content.FileProvider
+import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,15 +62,35 @@ fun CorScanScreen(
 ) {
     val state by vm.state.collectAsState()
     val context = LocalContext.current
+    // Full-res capture: TakePicture + FileProvider (the preview contract
+    // used to return a ~1MP thumbnail - too small for dense COR tables).
+    var pendingPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    val newPhotoUri: () -> Uri = {
+        val dir = File(context.cacheDir, "cor").apply { mkdirs() }
+        val file = File(dir, "cor_${System.currentTimeMillis()}.jpg")
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    }
     val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { bitmap: Bitmap? -> if (bitmap != null) vm.recognizeBitmap(bitmap) }
+        ActivityResultContracts.TakePicture()
+    ) { saved ->
+        val uri = pendingPhotoUri
+        if (saved && uri != null) vm.recognizeUri(context, uri)
+    }
+    val pdfLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri -> if (uri != null) vm.recognizePdf(context, uri) }
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri -> if (uri != null) vm.recognizeUri(context, uri) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted -> if (granted) cameraLauncher.launch(null) }
+    ) { granted ->
+        if (granted) {
+            val uri = newPhotoUri()
+            pendingPhotoUri = uri
+            cameraLauncher.launch(uri)
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,21 +124,29 @@ fun CorScanScreen(
                     val granted = ContextCompat.checkSelfPermission(
                         context, Manifest.permission.CAMERA
                     ) == PackageManager.PERMISSION_GRANTED
-                    if (granted) cameraLauncher.launch(null)
-                    else permissionLauncher.launch(Manifest.permission.CAMERA)
+                    if (granted) {
+                        val uri = newPhotoUri()
+                        pendingPhotoUri = uri
+                        cameraLauncher.launch(uri)
+                    } else {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
                 },
                 onGallery = {
                     galleryLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
+                onPdf = { pdfLauncher.launch("application/pdf") },
+                queuedPages = state.pageCount,
                 onPaste = { vm.parsePastedText(it) }
             )
             CorScanPhase.SCANNING -> CorStatusContent(Modifier.padding(padding), "Reading your COR…")
             CorScanPhase.CONFIRM -> CorConfirmContent(
                 modifier = Modifier.padding(padding),
                 vm = vm,
-                onRetake = { vm.backToCapture() }
+                onAddPage = { vm.addAnotherPage() },
+                onRetake = { vm.reset() }
             )
             CorScanPhase.SAVING -> CorStatusContent(Modifier.padding(padding), "Saving your schedule…")
             CorScanPhase.DONE -> CorDoneContent(

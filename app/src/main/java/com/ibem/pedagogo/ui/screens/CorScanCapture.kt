@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,7 +40,9 @@ fun CorCaptureContent(
     error: String?,
     onCamera: () -> Unit,
     onGallery: () -> Unit,
-    onPaste: (String) -> Unit
+    onPdf: () -> Unit,
+    onPaste: (String) -> Unit,
+    queuedPages: Int = 0
 ) {
     var showPaste by remember { mutableStateOf(false) }
     var pasteText by remember { mutableStateOf("") }
@@ -52,7 +55,10 @@ fun CorCaptureContent(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            "Point at your Certificate of Registration — or pick a screenshot of it.",
+            if (queuedPages > 0)
+                "Queued $queuedPages page" + if (queuedPages == 1) " — point at the next one." else "s — point at the next one."
+            else
+                "Point at your Certificate of Registration — or pick a screenshot or PDF of it.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -73,6 +79,14 @@ fun CorCaptureContent(
         ) {
             Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
             Text("  Choose from gallery")
+        }
+        OutlinedButton(
+            onClick = onPdf,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().height(52.dp)
+        ) {
+            Icon(Icons.Outlined.PictureAsPdf, contentDescription = null)
+            Text("  Choose a PDF file")
         }
         OutlinedButton(
             onClick = { showPaste = !showPaste },

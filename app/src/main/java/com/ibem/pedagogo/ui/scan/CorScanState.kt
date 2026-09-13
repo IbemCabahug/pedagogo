@@ -35,5 +35,6 @@ data class CorScanState(
     val drafts: List<CorDraftSlot> = emptyList(),
     val error: String? = null,
     val savedCount: Int = 0,
-    val alarmedCount: Int = 0
+    val alarmedCount: Int = 0,
+    val pageCount: Int = 0
 )

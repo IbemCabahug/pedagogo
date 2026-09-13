@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,6 +47,7 @@ val COR_DAY_NAMES = listOf("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 fun CorConfirmContent(
     modifier: Modifier = Modifier,
     vm: CorScanViewModel,
+    onAddPage: () -> Unit,
     onRetake: () -> Unit
 ) {
     val state by vm.state.collectAsState()
@@ -64,6 +66,7 @@ fun CorConfirmContent(
             )
             Text(
                 "$included of ${state.drafts.size} rows selected" +
+                    (if (state.pageCount > 1) " · ${state.pageCount} pages" else "") +
                     (state.parseResult?.let { " · ${it.skippedLines} lines skipped" } ?: ""),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -88,11 +91,21 @@ fun CorConfirmContent(
                 Icon(Icons.Default.Check, contentDescription = null)
                 Text("  Save $included to my schedule", fontWeight = FontWeight.Bold)
             }
-            OutlinedButton(
-                onClick = onRetake,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Retake photo") }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onAddPage,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = null)
+                    Text(" Add page")
+                }
+                OutlinedButton(
+                    onClick = onRetake,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Start over") }
+            }
             if (state.error != null) {
                 Text(
                     state.error ?: "",
