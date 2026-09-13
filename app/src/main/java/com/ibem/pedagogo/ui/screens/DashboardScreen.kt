@@ -31,7 +31,7 @@ import com.ibem.pedagogo.ui.components.TeachersSparkCard
 import com.ibem.pedagogo.ui.theme.*
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
     slots: List<ClassSlotDetail>,
@@ -196,6 +196,7 @@ fun DashboardScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NextClassHeroCard(
     slot: ClassSlotDetail,
@@ -207,7 +208,7 @@ fun NextClassHeroCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = MaterialTheme.shapes.large, // web --radius-lg (20dp) — design-research.md §6
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
@@ -230,7 +231,7 @@ fun NextClassHeroCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${slot.prepOffset}m calm buffer",
+                        text = "-${slot.prepOffset}m prep buffer",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -240,45 +241,57 @@ fun NextClassHeroCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Web .hero-code parity: 24px / 800 / -0.4px tracking
             Text(
                 text = slot.subjectCode,
                 style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.4).sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Text(
                 text = slot.subjectTitle,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.95f)
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Time & Location Bar
-            Row(
+            // Time & Location — frosted pill (web .hero-details parity:
+            // rgba(255,255,255,.5) light / rgba(0,0,0,.3) dark, radius-sm)
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
             ) {
-                Text(
-                    text = String.format("%02d:%02d – %02d:%02d", slot.startHour, slot.startMinute, slot.endHour, slot.endMinute),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = slot.room,
+                        text = String.format("%02d:%02d – %02d:%02d", slot.startHour, slot.startMinute, slot.endHour, slot.endMinute),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = slot.room,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
             }
 
@@ -297,7 +310,8 @@ fun NextClassHeroCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
+            // Web .preflight-chips parity: wrap instead of overflow
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -351,13 +365,13 @@ fun PreFlightChip(
     onToggle: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp), // web .preflight-chip parity
         color = if (checked)
             MaterialTheme.colorScheme.primary
         else
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onToggle() }
     ) {
         Row(
@@ -461,7 +475,7 @@ fun CategoryTagChip(category: String) {
     ) {
         Text(
             text = label.uppercase(),
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.ExtraBold,
             letterSpacing = 0.8.sp,
             color = fg,
