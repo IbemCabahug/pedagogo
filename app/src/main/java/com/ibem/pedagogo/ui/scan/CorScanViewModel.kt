@@ -3,7 +3,10 @@ package com.ibem.pedagogo.ui.scan
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.graphics.Color
+import android.util.Log
+import android.os.Build
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -40,6 +43,10 @@ data class CorSaveReport(
 // same OCR -> parser -> Confirm pipeline. Pages accumulate: raw OCR text from
 // every accepted page is re-parsed together until the student saves.
 class CorScanViewModel : ViewModel() {
+    companion object {
+        private const val TAG = "CorScan"
+    }
+
     private val _state = MutableStateFlow(CorScanState())
     val state: StateFlow<CorScanState> = _state.asStateFlow()
     private val draftIds = AtomicInteger(1)
@@ -75,35 +82,82 @@ class CorScanViewModel : ViewModel() {
             }
     }
 
-    // Full-res decode: bounds first, inSampleSize only for camera overkill
-    // (12MP+), never below what dense COR text needs (capped at ~2x 4096).
+    // Full-res decode, single-read: pull the bytes ONCE, then try bounds +
+    // sample decode from the same array (some providers flake on the second
+    // stream open), then fall back to ImageDecoder for formats BitmapFactory
+    // refuses - HEIC/HEIF album photos above all (the "clearer photo" false
+    // positive). Real decode failures log to logcat and name the actual cause.
     fun recognizeUri(context: Context, uri: Uri) {
         _state.update { it.copy(phase = CorScanPhase.SCANNING, error = null) }
         viewModelScope.launch(Dispatchers.IO) {
-            val bitmap = runCatching { decodeCapped(context, uri, 4096) }.getOrNull()
+            val decoded = runCatching { decodeCapped(context, uri, 4096) }
             withContext(Dispatchers.Main) {
-                if (bitmap != null) recognizeBitmap(bitmap)
-                else _state.update {
-                    it.copy(
-                        phase = CorScanPhase.CAPTURE,
-                        error = "Could not read that image. Try a clearer photo."
-                    )
-                }
+                decoded.fold(
+                    onSuccess = { bitmap ->
+                        if (bitmap != null) recognizeBitmap(bitmap)
+                        else _state.update {
+                            it.copy(
+                                phase = CorScanPhase.CAPTURE,
+                                error = decodeError
+                            )
+                        }
+                    },
+                    onFailure = { e ->
+                        Log.e(TAG, "decode failed", e)
+                        _state.update {
+                            it.copy(phase = CorScanPhase.CAPTURE, error = decodeError)
+                        }
+                    }
+                )
             }
         }
     }
 
     private fun decodeCapped(context: Context, uri: Uri, maxSide: Int): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        context.contentResolver.openInputStream(uri)
-            ?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        val bytes = context.contentResolver.openInputStream(uri)
+            ?.use { it.readBytes() }
             ?: return null
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-        val sample = corSampleSize(maxOf(bounds.outWidth, bounds.outHeight), maxSide)
-        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-        return context.contentResolver.openInputStream(uri)
-            ?.use { BitmapFactory.decodeStream(it, null, opts) }
+        Log.d(TAG, "intake bytes=" + bytes.size + " type=" + context.contentResolver.getType(uri))
+        if (bytes.isEmpty()) return null
+
+        // Pass 1: BitmapFactory from the in-memory bytes (single read).
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        val w = bounds.outWidth
+        val h = bounds.outHeight
+        if (w > 0 && h > 0) {
+            val sample = corSampleSize(maxOf(w, h), maxSide)
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+            val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
+            if (decoded != null) return decoded
+            Log.w(TAG, "BitmapFactory null for " + w + "x" + h + " sample=" + sample + " - trying ImageDecoder")
+        } else {
+            Log.w(TAG, "no bounds (unsupported container, likely HEIC) - trying ImageDecoder")
+        }
+
+        // Pass 2: ImageDecoder - modern, HEIC-aware (API 28+ only; older
+        // devices keep the honest-error path instead of crashing).
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            Log.w(TAG, "API < 28 - no ImageDecoder fallback available")
+            return null
+        }
+        val source = ImageDecoder.createSource(bytes)
+        return ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+            val size = info.size
+            val longSide = maxOf(size.width, size.height)
+            if (longSide > maxSide * 2) {
+                val scale = (maxSide * 2f) / longSide
+                decoder.setTargetSize(
+                    (size.width * scale).toInt().coerceAtLeast(1),
+                    (size.height * scale).toInt().coerceAtLeast(1)
+                )
+            }
+        }
     }
+
+    private val decodeError: String
+        get() = "Could not open that file. If it is a photo, save it as a JPEG " +
+            "or take a screenshot of it - then pick that instead."
 
     // Portal PDF path: framework PdfRenderer (zero new deps) -> white-backed
     // bitmaps -> per-page OCR -> one combined text for the parser.
