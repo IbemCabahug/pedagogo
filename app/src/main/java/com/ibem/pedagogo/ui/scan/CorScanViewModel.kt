@@ -330,6 +330,10 @@ class CorScanViewModel : ViewModel() {
         _state.update { it.copy(phase = CorScanPhase.CAPTURE, error = null) }
     }
 
+    fun setError(message: String) {
+        _state.update { it.copy(phase = CorScanPhase.CAPTURE, error = message) }
+    }
+
     fun reset() {
         rawTexts.clear()
         _state.value = CorScanState()

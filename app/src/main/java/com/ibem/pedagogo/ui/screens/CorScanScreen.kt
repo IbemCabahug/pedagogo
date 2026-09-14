@@ -1,6 +1,7 @@
 package com.ibem.pedagogo.ui.screens
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.core.content.FileProvider
@@ -137,7 +138,19 @@ fun CorScanScreen(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
-                onPdf = { pdfLauncher.launch("application/pdf") },
+                onPdf = {
+                    val pdfIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/pdf"
+                    }
+                    if (context.packageManager.resolveActivity(pdfIntent, 0) != null) {
+                        pdfLauncher.launch("application/pdf")
+                    } else {
+                        vm.setError(
+                            "This device has no PDF picker. Take a photo or paste the lines instead."
+                        )
+                    }
+                },
                 queuedPages = state.pageCount,
                 onPaste = { vm.parsePastedText(it) }
             )
